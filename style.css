@@ -1,20 +1,25 @@
+@font-face {
+  font-family: "Limelight";
+  src: url("fonts/Limelight-Regular.ttf") format("truetype");
+}
+
 body {
   margin: 0;
-  background: black;
-  color: white;
-  font-family: Arial, sans-serif;
+  background: rgb(255, 229, 229);
+  color: rgb(164, 0, 0);
+  font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
 }
 
 nav {
   position: fixed;
   top: 0;
   width: 100%;
-  background: #111;
-  padding: 10px;
+  background: rgb(106, 0, 0);
+  padding: 20px;
 }
 
 nav a {
-  color: white;
+  color: rgb(255, 255, 255);
   margin-right: 15px;
   text-decoration: none;
 }
@@ -26,3 +31,21 @@ nav a {
   justify-content: center;
   align-items: center;
 }
+
+.title {
+  font-family: "Limelight", serif;
+  font-size: 64px;
+  font-weight: bold;
+  letter-spacing: -2px;
+}
+
+.circle {
+  position: absolute;
+  opacity: 0.8;
+}
+
+.c1 { width: 200px; }
+.c2 { width: 200px; }
+.c3 { width: 250px; }
+.c4 { width: 150px; }
+
