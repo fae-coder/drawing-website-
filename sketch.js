@@ -17,42 +17,50 @@ function draw() {
   // soft pink background
   background(255, 248, 250);
 
-  // =========================
+  
   // HOME SCREEN
-  // =========================
   if (homeScreen) {
 
     for (let c of homeCircles) {
       c.move();
       c.checkEdges();
       c.checkOthers(homeCircles);
+      c.sliceCheck();
       c.show();
     }
 
     noStroke();
 
-    // title
+// TITLE
+textAlign(CENTER, CENTER);
 
-    fill(164, 0, 0);
+// title styling
+fill(140, 0, 0);
+textFont("Limelight");
+textSize(80);
+textStyle(BOLD);
 
-    textAlign(CENTER, CENTER);
+text(
+  "pop, slice, drag",
+  width / 2,
+  height / 2 - 20
+);
 
-    textSize(52);
-    text("Popop", width / 2, height / 2);
+// SUBTITLE
+drawingContext.shadowBlur = 0;
 
-    // subtitle
-    fill(164, 0, 0);
-
-    textSize(20);
-
-    text(
-      "Interact with your mouse - click to start",
-      width / 2,
-      height / 2 + 55
-    );
-
-    return;
+fill(120, 0, 0);
+textFont("Georgia");
+textSize(22);
+text(
+  " click to start",
+  width / 2,
+  height / 2 + 55
+);
+return;
   }
+
+
 
   // =========================
   // DRAWING MODE
@@ -60,16 +68,15 @@ function draw() {
   for (let blob of blobs) {
     blob.move();
     blob.checkEdges();
-    blob.mouseRepel();
     blob.interact(blobs);
+    blob.sliceCheck();
     blob.show();
   }
 
 }
 
-// ======================================
+
 // CLICKING
-// ======================================
 
 function mousePressed() {
 
@@ -92,9 +99,7 @@ function mousePressed() {
     );
 
     if (d < blob.r) {
-
       blob.col = random(blob.colors);
-
       clickedBlob = true;
     }
   }
@@ -103,7 +108,7 @@ function mousePressed() {
   if (!clickedBlob) {
 
     blobs.push(
-      new LiquidBlob(
+    new LiquidBlob(
         mouseX,
         mouseY,
         random(25, 85)
@@ -131,10 +136,7 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
 
-// ======================================
 // HOME SCREEN CIRCLES
-// ======================================
-
 class HomeCircle {
 
   constructor() {
@@ -173,7 +175,6 @@ class HomeCircle {
       );
 
       let force = map(d, 0, 180, 0.5, 0);
-
       this.vx += cos(angle) * force;
       this.vy += sin(angle) * force;
     }
@@ -246,6 +247,37 @@ class HomeCircle {
     }
   }
 
+sliceCheck() {
+
+  let d = dist(mouseX, mouseY, this.x, this.y);
+
+  if (d < this.r && this.r > 25) {
+
+    let newR = this.r * 0.6;
+
+    homeCircles.push(
+      new HomeCircleSplit(
+        this.x - newR * 0.5,
+        this.y,
+        newR
+      )
+    );
+
+    homeCircles.push(
+      new HomeCircleSplit(
+        this.x + newR * 0.5,
+        this.y,
+        newR
+      )
+    );
+
+    let index = homeCircles.indexOf(this);
+    if (index > -1) {
+      homeCircles.splice(index, 1);
+    }
+  }
+}
+
   show() {
 
     noStroke();
@@ -257,6 +289,22 @@ class HomeCircle {
       this.y,
       this.r * 2
     );
+  }
+}
+
+class HomeCircleSplit extends HomeCircle {
+
+  constructor(x, y, r) {
+
+    super();
+
+    this.x = x;
+    this.y = y;
+
+    this.r = r;
+
+    this.vx = random(-2, 2);
+    this.vy = random(-2, 2);
   }
 }
 
@@ -329,23 +377,6 @@ class LiquidBlob {
     }
   }
 
-  mouseRepel() {
-
-    let d = dist(mouseX, mouseY, this.x, this.y);
-
-    if (d < 170) {
-
-      let angle = atan2(
-        this.y - mouseY,
-        this.x - mouseX
-      );
-
-      let force = map(d, 0, 170, 0.5, 0);
-
-      this.vx += cos(angle) * force;
-      this.vy += sin(angle) * force;
-    }
-  }
 
   interact(blobs) {
 
@@ -391,6 +422,38 @@ class LiquidBlob {
     }
   }
 
+  sliceCheck() {
+
+  let d = dist(mouseX, mouseY, this.x, this.y);
+
+  if (d < this.r && this.r > 20) {
+
+    let newR = this.r * 0.6;
+
+    blobs.push(
+      new LiquidBlob(
+        this.x - newR * 0.5,
+        this.y,
+        newR
+      )
+    );
+
+    blobs.push(
+      new LiquidBlob(
+        this.x + newR * 0.5,
+        this.y,
+        newR
+      )
+    );
+
+    let index = blobs.indexOf(this);
+
+    if (index > -1) {
+      blobs.splice(index, 1);
+    }
+  }
+}
+
   show() {
 
     noStroke();
@@ -403,4 +466,8 @@ class LiquidBlob {
       this.r * 2
     );
   }
+}
+
+function clearBlobs() {
+  blobs = [];
 }
