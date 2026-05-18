@@ -1,15 +1,45 @@
 let homeCircles = [];
 let blobs = [];
 
+let colorPicker1;
+let colorPicker2;
+
+let uiActive = false;
+
 let homeScreen = true;
+
+let bgMusic;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
 
-  // floating homepage circles
+   // start loop
+  bgMusic.setVolume(0.4);
+  bgMusic.loop();
+
   for (let i = 0; i < 18; i++) {
     homeCircles.push(new HomeCircle());
   }
+
+  // CREATE WRAPPER
+  let pickerWrap = createDiv();
+  pickerWrap.class("color-pill");
+
+ colorPicker1 = createColorPicker("#ffd6e0");
+ colorPicker1.parent(pickerWrap);
+
+ colorPicker1.mousePressed(() => uiActive = true);
+ colorPicker1.mouseReleased(() => uiActive = false);
+
+ colorPicker2 = createColorPicker("#f5bcd2");
+ colorPicker2.parent(pickerWrap);
+
+ colorPicker2.mousePressed(() => uiActive = true);
+ colorPicker2.mouseReleased(() => uiActive = false);
+}
+
+function preload() {
+  bgMusic = loadSound ("sound/background.mp3")
 }
 
 function draw() {
@@ -41,7 +71,7 @@ textSize(80);
 textStyle(BOLD);
 
 text(
-  "pop, slice, drag",
+  "drag, touch, relax",
   width / 2,
   height / 2 - 20
 );
@@ -79,6 +109,12 @@ return;
 // CLICKING
 
 function mousePressed() {
+
+if (bgMusic && !bgMusic.isPlaying()) {
+    bgMusic.loop();
+  }
+   
+if (uiActive) return;
 
   // enter app
   if (homeScreen) {
@@ -314,40 +350,53 @@ class HomeCircleSplit extends HomeCircle {
 
 class LiquidBlob {
 
-  constructor(x, y, r) {
+constructor(x, y, r, col = null) {
 
     this.x = x;
     this.y = y;
 
     this.r = r;
 
-    this.vx = random(-1, 1);
-    this.vy = random(-1, 1);
+    // movement
+    this.vx = random(-1.2, 1.2);
+    this.vy = random(-1.2, 1.2);
 
-    // baby pink palette
-    this.colors = [
-      color(255, 220, 230),
-      color(255, 210, 225),
-      color(255, 200, 218),
-      color(245, 190, 210),
-      color(255, 228, 235)
-    ];
+    // soft organic movement
+    this.offset = random(1000);
 
-    this.col = random(this.colors);
-  }
+    // colors
+this.colors = [
+  color(colorPicker1.value()),
+  color(colorPicker2.value())
+];
+
+if (col) {
+
+  this.col = col;
+
+} else {
+
+  this.col = lerpColor(
+    this.colors[0],
+    this.colors[1],
+    random(1)
+  );
+}
+
+}
 
   move() {
 
     this.x += this.vx;
     this.y += this.vy;
 
-    // gentle floating motion
-    this.vx += random(-0.015, 0.015);
-    this.vy += random(-0.015, 0.015);
+    // floating movement
+    this.vx += random(-0.02, 0.02);
+    this.vy += random(-0.02, 0.02);
 
     // smoothing
-    this.vx *= 0.99;
-    this.vy *= 0.99;
+    this.vx *= 0.995;
+    this.vy *= 0.995;
   }
 
   checkEdges() {
@@ -377,7 +426,6 @@ class LiquidBlob {
     }
   }
 
-
   interact(blobs) {
 
     for (let other of blobs) {
@@ -393,7 +441,6 @@ class LiquidBlob {
 
       let minDist = this.r + other.r;
 
-      // collision
       if (d < minDist) {
 
         let angle = atan2(
@@ -413,11 +460,11 @@ class LiquidBlob {
         other.y -= pushY;
 
         // soft bounce
-        this.vx += pushX * 0.02;
-        this.vy += pushY * 0.02;
+        this.vx += pushX * 0.015;
+        this.vy += pushY * 0.015;
 
-        other.vx -= pushX * 0.02;
-        other.vy -= pushY * 0.02;
+        other.vx -= pushX * 0.015;
+        other.vy -= pushY * 0.015;
       }
     }
   }
@@ -426,45 +473,45 @@ class LiquidBlob {
 
   let d = dist(mouseX, mouseY, this.x, this.y);
 
-  if (d < this.r && this.r > 20) {
-
-    let newR = this.r * 0.6;
-
-    blobs.push(
-      new LiquidBlob(
-        this.x - newR * 0.5,
-        this.y,
-        newR
-      )
-    );
-
-    blobs.push(
-      new LiquidBlob(
-        this.x + newR * 0.5,
-        this.y,
-        newR
-      )
-    );
+  // drag through blobs to remove them
+  if (mouseIsPressed && d < this.r) {
 
     let index = blobs.indexOf(this);
 
     if (index > -1) {
-      blobs.splice(index, 1);
+
+      // shrink effect before disappearing
+      this.r *= 0.9;
+
+      // fully remove tiny blobs
+      if (this.r < 10) {
+        blobs.splice(index, 1);
+        }
+      }
     }
   }
-}
 
   show() {
 
     noStroke();
 
+    // soft glow
+    drawingContext.shadowBlur = 10;
+    drawingContext.shadowColor = this.col;
+
     fill(this.col);
+
+    // breathing effect
+    let pulse =
+      sin(frameCount * 0.05 + this.offset) * 3;
 
     ellipse(
       this.x,
       this.y,
-      this.r * 2
+      (this.r + pulse) * 2
     );
+
+    drawingContext.shadowBlur = 0;
   }
 }
 
