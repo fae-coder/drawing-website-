@@ -1,54 +1,72 @@
+//ARRAYS
 let homeCircles = [];
 let blobs = [];
-
+//UI
 let colorPicker1;
 let colorPicker2;
-
+//STATE
 let uiActive = false;
-
 let homeScreen = true;
-
+//AUDIO
 let bgMusic;
+
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-
-   // start loop
-  bgMusic.setVolume(0.4);
-  bgMusic.loop();
 
   for (let i = 0; i < 18; i++) {
     homeCircles.push(new HomeCircle());
   }
 
-  // CREATE WRAPPER
+  //Create wrapper
   let pickerWrap = createDiv();
   pickerWrap.class("color-pill");
 
- colorPicker1 = createColorPicker("#ffd6e0");
- colorPicker1.parent(pickerWrap);
+  let savedColor1 =
+  localStorage.getItem("color1") || "#ffd6e0";
 
+  //Pill Color picker
+colorPicker1 =
+createColorPicker(savedColor1);
+ colorPicker1.parent(pickerWrap);
  colorPicker1.mousePressed(() => uiActive = true);
  colorPicker1.mouseReleased(() => uiActive = false);
 
- colorPicker2 = createColorPicker("#f5bcd2");
- colorPicker2.parent(pickerWrap);
+  let savedColor2 =
+  localStorage.getItem("color2") || "#f5bcd2";
 
+colorPicker2 =
+createColorPicker(savedColor2);
+ colorPicker2.parent(pickerWrap);
  colorPicker2.mousePressed(() => uiActive = true);
  colorPicker2.mouseReleased(() => uiActive = false);
+
+ //save changes to local storage 
+ colorPicker1.input(() => {
+  localStorage.setItem(
+    "color1",
+    colorPicker1.value()
+  );
+});
+
+  colorPicker2.input(() => {
+  localStorage.setItem(
+    "color2",
+    colorPicker2.value()
+  );
+});
 }
 
+//BG sound
 function preload() {
   bgMusic = loadSound ("sound/background.mp3")
 }
 
 function draw() {
-
   // soft pink background
   background(255, 248, 250);
 
-  
-  // HOME SCREEN
+  // Home screen
   if (homeScreen) {
 
     for (let c of homeCircles) {
@@ -61,22 +79,21 @@ function draw() {
 
     noStroke();
 
-// TITLE
+// Title
 textAlign(CENTER, CENTER);
 
 // title styling
 fill(140, 0, 0);
-textFont("Limelight");
 textSize(80);
 textStyle(BOLD);
 
 text(
   "drag, touch, relax",
   width / 2,
-  height / 2 - 20
+  height / 2 - 1
 );
 
-// SUBTITLE
+// Subtitle
 drawingContext.shadowBlur = 0;
 
 fill(120, 0, 0);
@@ -85,16 +102,13 @@ textSize(22);
 text(
   " click to start",
   width / 2,
-  height / 2 + 55
+  height / 2 + 65
 );
 return;
   }
 
+  // Drawing mode
 
-
-  // =========================
-  // DRAWING MODE
-  // =========================
   for (let blob of blobs) {
     blob.move();
     blob.checkEdges();
@@ -102,19 +116,18 @@ return;
     blob.sliceCheck();
     blob.show();
   }
-
 }
 
 
-// CLICKING
+// Clicking
 
 function mousePressed() {
-
-if (bgMusic && !bgMusic.isPlaying()) {
-    bgMusic.loop();
-  }
    
 if (uiActive) return;
+if (bgMusic && !bgMusic.isPlaying()) {
+    bgMusic.setVolume(0.4);
+    bgMusic.loop();
+  }
 
   // enter app
   if (homeScreen) {
@@ -172,7 +185,7 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
 
-// HOME SCREEN CIRCLES
+// Home screen circles
 class HomeCircle {
 
   constructor() {
@@ -344,9 +357,7 @@ class HomeCircleSplit extends HomeCircle {
   }
 }
 
-// ======================================
 // DRAWING BLOBS
-// ======================================
 
 class LiquidBlob {
 
@@ -365,7 +376,7 @@ constructor(x, y, r, col = null) {
     this.offset = random(1000);
 
     // colors
-this.colors = [
+  this.colors = [
   color(colorPicker1.value()),
   color(colorPicker2.value())
 ];
@@ -517,4 +528,24 @@ if (col) {
 
 function clearBlobs() {
   blobs = [];
+}
+
+// Mute button
+
+let musicMuted = false;
+
+function toggleMusic() {
+
+  if (!bgMusic) return;
+
+  if (musicMuted) {
+
+    bgMusic.setVolume(0.4);
+    musicMuted = false;
+
+  } else {
+
+    bgMusic.setVolume(0);
+    musicMuted = true;
+  }
 }
