@@ -84,7 +84,7 @@ textAlign(CENTER, CENTER);
 
 // title styling
 fill(140, 0, 0);
-textSize(80);
+textSize(50);
 textStyle(BOLD);
 
 text(
