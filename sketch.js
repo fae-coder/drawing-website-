@@ -248,8 +248,10 @@ class HomeCircle {
     }
 
     // TOP
-    if (this.y - this.r < 0) {
-      this.y = this.r;
+   let navHeight = 60;
+
+    if (this.y - this.r < navHeight) {
+      this.y = navHeight + this.r;
       this.vy *= -1;
     }
 
@@ -425,10 +427,12 @@ if (col) {
     }
 
     // TOP
-    if (this.y - this.r < 0) {
-      this.y = this.r;
+    let navHeight = 60;
+
+    if (this.y - this.r < navHeight) {
+      this.y = navHeight + this.r;
       this.vy *= -1;
-    }
+}
 
     // BOTTOM
     if (this.y + this.r > height) {
